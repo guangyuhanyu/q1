@@ -351,6 +351,44 @@ footer.app-footer{
   .tonghop-banner .cta{ margin-left:70px; }
 }
 
+/* ============================== KHẨU NGỮ BANNER ============================== */
+.khauyngu-banner{
+  cursor:pointer; user-select:none; margin-top:14px; text-decoration:none;
+  display:flex; align-items:center; gap:18px;
+  background: linear-gradient(120deg, #fff 0%, var(--cam-nen) 120%);
+  border:1.5px solid var(--cam-vien); border-radius:20px;
+  padding:20px 24px;
+  box-shadow: 0 4px 0 rgba(156,90,46,0.06), 0 14px 32px -16px rgba(156,90,46,0.28);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.khauyngu-banner:hover{ transform: translateY(-3px); box-shadow: 0 8px 0 rgba(156,90,46,0.08), 0 20px 40px -14px rgba(156,90,46,0.34); }
+.khauyngu-banner:active{ transform: translateY(-1px); }
+.khauyngu-banner-icon{
+  flex:0 0 auto; width:64px; height:64px; border-radius:50%; position:relative;
+  background: linear-gradient(135deg, var(--vang), var(--cam-chu));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Noto Serif SC', serif; font-weight:900; color:#fff;
+  font-size:26px; box-shadow:0 6px 14px -4px rgba(156,90,46,0.5);
+}
+.khauyngu-banner-icon::after{
+  content:"🔊"; position:absolute; right:-4px; bottom:-4px; font-size:15px;
+  background:#fff; border-radius:50%; width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.18);
+}
+.khauyngu-banner-body{ flex:1 1 auto; min-width:0; }
+.khauyngu-banner-body h2{ margin:0 0 4px; font-family:'Noto Serif SC',serif; font-weight:800; font-size:18px; color:var(--muc); }
+.khauyngu-banner-body p{ margin:0; font-size:13px; color:var(--muc-nhat); }
+.khauyngu-banner .cta{
+  flex:0 0 auto; font-size:12.5px; font-weight:800; color:#fff;
+  background: var(--cam-chu); padding:9px 18px; border-radius:999px; white-space:nowrap;
+}
+@media (max-width:560px){
+  .khauyngu-banner{ flex-wrap:wrap; padding:16px 18px; }
+  .khauyngu-banner-icon{ width:52px; height:52px; font-size:20px; }
+  .khauyngu-banner .cta{ margin-left:70px; }
+}
+
 /* progress + part nav */
 .lt-progress{
   display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;
@@ -586,6 +624,14 @@ footer.app-footer{
       </div>
       <div class="cta">Bắt đầu →</div>
     </div>
+    <a class="khauyngu-banner" href="5-de-tai-noi-on-tap-cuoi-khoa.html" target="_blank" rel="noopener">
+      <div class="khauyngu-banner-icon">说</div>
+      <div class="khauyngu-banner-body">
+        <h2>Luyện Khẩu Ngữ</h2>
+        <p>5 đề tài · Nghe & lặp lại + Hỏi đáp + Nhìn tranh kể chuyện + Trình bày · Ôn cuối khóa</p>
+      </div>
+      <div class="cta">Bắt đầu →</div>
+    </a>
     <div class="home-note">💡 Bài 1, 2, 4, 5 chủ yếu là phần <b>Ngữ âm</b> (thanh điệu, phiên âm); Bài 6–15 là phần <b>Ngữ pháp</b> (mẫu câu, cấu trúc). Cả hai đều được gộp trong mục "Ôn Ngữ Pháp".</div>
   </div>
 
