@@ -191,31 +191,16 @@
   .opt.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
   .opt.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
 
-  /* ===== Part 2: matching ===== */
-  .match-wrap{ display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .match-col h4{
-    margin:0 0 10px 0; font-size:12px; text-transform:uppercase; letter-spacing:.06em;
-    color:var(--cam-chu); font-weight:800;
-  }
-  .match-item{
-    cursor:pointer; user-select:none;
-    border:1.6px solid var(--cam-vien); border-radius:10px;
-    padding:9px 12px; margin-bottom:8px;
-    background:#fff; font-size:14.5px;
-    display:flex; align-items:baseline; gap:8px;
-    transition: all .15s ease;
-  }
-  .match-item .cn{ font-family:'Noto Sans SC', sans-serif; font-weight:700; font-size:16.5px; }
-  .match-item .py{ font-size:11.5px; color:var(--muc-nhat); }
-  .match-item:hover{ border-color:var(--cam-dam); transform: translateX(2px); }
-  .match-item.active{ border-color:var(--xanh-duong); background:#E7EEFF; }
-  .match-item.matched{ border-color:var(--xanh-la); background:#EBFBEE; opacity:.72; cursor:default; }
-  .match-item.matched:hover{ transform:none; }
-  .match-item.shake{ animation: shake .35s; border-color:var(--do); background:#FFF0F0; }
-  @keyframes shake{
-    20%,60%{ transform:translateX(-5px);} 40%,80%{ transform:translateX(5px);} 100%{transform:translateX(0);}
-  }
-  .match-progress{ margin-top:14px; font-size:12.5px; color:var(--muc-nhat); font-weight:600; }
+  /* ===== phản hồi đúng/sai ngay sau khi chọn ===== */
+  .opt.locked{ pointer-events:none; }
+  .opt.wrong{ opacity:.8; }
+  .q-fb{ margin-top:9px; font-size:13px; font-weight:700; }
+  .q-fb:empty{ display:none; }
+  .q-fb.ok{ color:var(--xanh-la); }
+  .q-fb.no{ color:var(--do); }
+
+  .dropzone.done{ border-color:var(--xanh-la); border-style:solid; background:#EBFBEE; }
+  .dropzone.done .chip-placed{ cursor:default; border-color:var(--xanh-la); color:#2B8A3E; }
 
   /* ===== Part 3: sentence builder ===== */
   .builder{
@@ -395,7 +380,6 @@
     .header{ padding: 100px 20px 22px 20px; text-align:center; }
     .badge{ left:50%; top:20px; transform:translateX(-50%); width:72px; height:72px; }
     .info-bar{ grid-template-columns: 1fr; }
-    .match-wrap{ grid-template-columns: 1fr; }
     .section-head .skill{ display:none; }
   }
 </style>
@@ -429,7 +413,7 @@
       <div class="skill">🎯 Từ vựng · Ngữ pháp</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Chọn từ đúng để hoàn thành mỗi câu. Mỗi câu chỉ có <b>1 đáp án đúng</b>.</p>
+      <p class="instruction">Chọn từ đúng để hoàn thành mỗi câu. Mỗi câu chỉ có <b>1 đáp án đúng</b>. Chọn sai bạn được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div id="p1"></div>
     </div>
   </div>
@@ -442,7 +426,7 @@
       <div class="skill">✍️ Viết · Ngữ pháp</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Bấm vào các từ theo đúng thứ tự để tạo thành câu. Bấm vào từ đã chọn (ở khung trên) nếu muốn bỏ ra.</p>
+      <p class="instruction">Bấm vào các từ theo đúng thứ tự để tạo thành câu. Bấm vào từ đã chọn (ở khung trên) nếu muốn bỏ ra. Xếp sai bạn được xếp lại (điểm tính theo <b>lần xếp đầu tiên</b>).</p>
       <div id="p2builder"></div>
     </div>
   </div>
@@ -511,14 +495,14 @@ const SHEET_WEBAPP_URL = ""; // <-- dán URL Google Apps Script Web App vào đ�
 /* ================= DỮ LIỆU PHẦN 1: CHỌN ĐÁP ÁN ĐÚNG ================= */
 const p1Data = [
   { text:"A：<span class='cn'>你家有几___人？</span>　B：<span class='cn'>我家有四口人。</span>", py:"A: Nǐ jiā yǒu jǐ ____ rén?　B: Wǒ jiā yǒu sì kǒu rén.",
-    options:[["口","kǒu"],["个","gè"],["位","wèi"]], answer:0 },
+    options:[["口","kǒu"],["位","wèi"],["张","zhāng"]], answer:0 },
   { text:"A：<span class='cn'>你有兄弟姐妹吗？</span>　B：<span class='cn'>没有，我是___。</span>", py:"A: Nǐ yǒu xiōngdì jiěmèi ma?　B: Méiyǒu, wǒ shì ____.",
     options:[["独生女","dúshēngnǚ"],["孩子","háizi"],["父母","fùmǔ"]], answer:0 },
   { text:"A：<span class='cn'>你父亲做什么___？</span>　B：<span class='cn'>我父亲是医生。</span>", py:"A: Nǐ fùqin zuò shénme ____?　B: Wǒ fùqin shì yīshēng.",
     options:[["工作","gōngzuò"],["名字","míngzi"],["公司","gōngsī"]], answer:0 },
   { text:"A：<span class='cn'>您今年多大年纪了？</span>　B：<span class='cn'>我今年六十五___。</span>", py:"A: Nín jīnnián duō dà niánjì le?　B: Wǒ jīnnián liùshíwǔ ____.",
     options:[["岁","suì"],["口","kǒu"],["位","wèi"]], answer:0 },
-  { text:"<span class='cn'>这是我的___。</span>", py:"Zhè shì wǒ de ____.",
+  { text:"<span class='cn'>这是我的___，上面有我的电话号码。</span>", py:"Zhè shì wǒ de ____, shàngmiàn yǒu wǒ de diànhuà hàomǎ.",
     options:[["名片","míngpiàn"],["秘密","mìmì"],["工作","gōngzuò"]], answer:0 },
   { text:"A：<span class='cn'>你父母的年纪是___吗？</span>　B：<span class='cn'>当然不是，我父亲六十岁，母亲五十八岁。</span>", py:"A: Nǐ fùmǔ de niánjì shì ____ ma?　B: Dāngrán bú shì, wǒ fùqin liùshí suì, mǔqin wǔshíbā suì.",
     options:[["秘密","mìmì"],["名片","míngpiàn"],["工作","gōngzuò"]], answer:0 },
@@ -533,7 +517,8 @@ const p2Data = [
   { vi:"Nhà tôi có bốn người.", words:["我","家","有","四","口","人","。"] },
   { vi:"Bố tôi là bác sĩ.", words:["我","父亲","是","医生","。"] },
   { vi:"Mẹ tôi làm việc ở công ty.", words:["我","母亲","在","公司","工作","。"] },
-  { vi:"Tôi là con gái duy nhất, không có anh chị em.", words:["我","是","独生女","，","没有","兄弟","姐妹","。"] },
+  { vi:"Tôi là con gái duy nhất, không có anh chị em.", words:["我","是","独生女","，","没有","兄弟","姐妹","。"],
+    alts:[["没有","兄弟","姐妹","，","我","是","独生女","。"]] },
   { vi:"Đây là danh thiếp của cha mẹ tôi.", words:["这","是","我","父母","的","名片","。"] },
 ];
 
@@ -559,11 +544,6 @@ const p4Data = [
   { vi:"Anh trai tôi là nhà báo, anh ấy thường cùng bạn bè làm việc.", answer:"我哥哥是记者，他常常跟朋友一起工作。(Wǒ gēge shì jìzhě, tā chángcháng gēn péngyou yìqǐ gōngzuò.)", keywords:["记者"] },
 ];
 
-/* ============================== STATE ============================== */
-let p1Answers = new Array(p1Data.length).fill(null);
-let p1Locked = false;
-let p2State = p2Data.map(item => ({ placed: [], bank: shuffle(item.words.map((w,i)=>({w,i}))) }));
-
 /* ============================== HELPERS ============================== */
 function shuffle(arr){
   const a = arr.slice();
@@ -572,6 +552,82 @@ function shuffle(arr){
     [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
+}
+
+/* Lập kế hoạch vị trí đáp án đúng cho từng câu (ks = số lựa chọn của mỗi câu):
+   - phân bố đều các vị trí
+   - KHÔNG có 3 câu liên tiếp cùng vị trí, KHÔNG có dãy tăng/giảm dần (0,1,2 / 2,1,0)
+   - KHÔNG lặp thành chu kỳ (vd A-B-C-A-B-C) */
+function planPositions(ks){
+  const n = ks.length, kmin = Math.min(...ks), kmax = Math.max(...ks);
+  const uniform = (kmin === kmax);
+  const minCount = Math.floor(n / (kmax + 1));
+  const gen = () => uniform ? shuffle(Array.from({length:n}, (_,i)=> i % kmax)) : ks.map(k => Math.floor(Math.random()*k));
+  const balanced = seq => { for(let p=0;p<kmin;p++){ if(seq.filter(x=>x===p).length < minCount) return false; } return true; };
+  const patterned = seq => {
+    for(let i=0;i+2<n;i++){
+      const a=seq[i], b=seq[i+1], c=seq[i+2];
+      if(a===b && b===c) return true;
+      if(b-a===1 && c-b===1) return true;
+      if(a-b===1 && b-c===1) return true;
+    }
+    for(let p=1;p<=Math.min(4,n-1);p++){
+      let periodic = true;
+      for(let i=p;i<n;i++){ if(seq[i]!==seq[i-p]){ periodic=false; break; } }
+      if(periodic) return true;
+    }
+    return false;
+  };
+  let seq = gen();
+  for(let t=0;t<5000 && (patterned(seq) || !balanced(seq));t++){ seq = gen(); }
+  return seq;
+}
+function arrangeOptions(data, getIdx){
+  getIdx = getIdx || (q => q.answer);
+  const pos = planPositions(data.map(q => q.options.length));
+  data.forEach((q,i)=>{
+    const idx = getIdx(q);
+    const correct = q.options[idx];
+    const others = shuffle(q.options.filter((_,oi)=> oi !== idx));
+    others.splice(pos[i], 0, correct);
+    q.opts = others;
+    q.ans = pos[i];
+  });
+}
+
+/* ============================== STATE (dùng chung) ============================== */
+let submitted = false;
+function newQState(){ return { attempts:0, wrong:[], solved:false, first:false }; }
+
+let p1State = p1Data.map(newQState);
+
+function optHTML(qi, oi, opt){
+  return `<div class="opt" data-q="${qi}" data-o="${oi}" onclick="selectP1(${qi},${oi})">
+    <span class="cn">${opt[0]}</span><span class="py-mini">${opt[1]}</span>
+  </div>`;
+}
+function setQFb(qi, msg, cls){
+  const fb = document.getElementById(`qfb-${qi}`);
+  fb.textContent = msg;
+  fb.className = 'q-fb ' + (cls||'');
+}
+function selectP1(qi, oi){
+  if(submitted) return;
+  const q = p1Data[qi], st = p1State[qi];
+  if(st.solved || st.wrong.includes(oi)) return;
+  const node = document.querySelector(`#q1-${qi} .opt[data-o="${oi}"]`);
+  st.attempts++;
+  if(oi === q.ans){
+    st.solved = true;
+    st.first = (st.attempts === 1);
+    node.classList.add('correct');
+    document.querySelectorAll(`#q1-${qi} .opt`).forEach(n=>n.classList.add('locked'));
+    setQFb(qi, '✔ Chính xác!', 'ok');
+  } else {
+    st.wrong.push(oi);
+    node.classList.add('wrong','locked');
+    setQFb(qi, '✘ Chưa đúng — hãy chọn lại nhé!', 'no');
+  }
 }
 
 /* ============================== RENDER PHẦN 1 ============================== */
@@ -583,18 +639,23 @@ function renderP1(){
         <span class="py-line">${q.py}</span>
       </div>
       <div class="options">
-        ${q.options.map((opt,oi)=>`
-          <div class="opt" data-q="${qi}" data-o="${oi}" onclick="selectP1(${qi},${oi})">
-            <span class="cn">${opt[0]}</span><span class="py-mini">${opt[1]}</span>
-          </div>`).join('')}
+        ${q.opts.map((opt,oi)=> optHTML(qi, oi, opt)).join('')}
       </div>
+      <div class="q-fb" id="qfb-${qi}" aria-live="polite"></div>
     </div>`).join('');
 }
-function selectP1(qi, oi){
-  if(p1Locked) return;
-  p1Answers[qi] = oi;
-  document.querySelectorAll(`#p1 .opt[data-q="${qi}"]`).forEach(o=>o.classList.remove('selected'));
-  document.querySelector(`#q1-${qi} .opt[data-o="${oi}"]`).classList.add('selected');
+
+let p2State = p2Data.map(item => ({ placed: [], bank: makeBank(item), attempts:0, solved:false, first:false }));
+function accepted(item){ return [item.words].concat(item.alts || []); }
+function makeBank(item){
+  const toks = item.words.map((w,i)=>({w,i}));
+  let bank = shuffle(toks);
+  for(let k=0;k<50;k++){
+    const seq = bank.map(x=>x.w).join('|');
+    if(!accepted(item).some(a => a.join('|') === seq)) break;   // không để lần xáo đầu trùng một đáp án đúng
+    bank = shuffle(toks);
+  }
+  return bank;
 }
 
 /* ============================== RENDER PHẦN 2: SẮP XẾP CÂU ============================== */
@@ -631,28 +692,47 @@ function renderDropzone(bi){
     return `<div class="chip-placed" onclick="removeChip(${bi}, ${order})">${w}${py ? `<span class="chip-py">${py}</span>` : ''}</div>`;
   }).join('');
 }
+function setP2Fb(bi, msg, cls){
+  const fb = document.getElementById(`fb-${bi}`);
+  fb.textContent = msg;
+  fb.className = 'builder-feedback ' + (cls||'');
+}
+function checkP2Item(bi){
+  const seq = p2State[bi].placed.map(t => p2Data[bi].words[t]).join('|');
+  return accepted(p2Data[bi]).some(a => a.join('|') === seq);
+}
 function placeChip(bi, tokIdx){
-  if(p2State[bi].placed.includes(tokIdx)) return;
-  p2State[bi].placed.push(tokIdx);
+  if(submitted) return;
+  const st = p2State[bi];
+  if(st.solved || st.placed.includes(tokIdx)) return;
+  st.placed.push(tokIdx);
   renderDropzone(bi);
   renderBank(bi);
+  if(st.placed.length === p2Data[bi].words.length){      // xếp đủ từ → báo ngay
+    st.attempts++;
+    if(checkP2Item(bi)){
+      st.solved = true;
+      st.first = (st.attempts === 1);
+      document.getElementById(`dz-${bi}`).classList.add('done');
+      setP2Fb(bi, '✔ Chính xác!', 'ok');
+    } else {
+      setP2Fb(bi, '✘ Chưa đúng — bấm vào từ để bỏ ra rồi sắp xếp lại nhé!', 'no');
+    }
+  }
 }
 function removeChip(bi, order){
+  if(submitted || p2State[bi].solved) return;
   p2State[bi].placed.splice(order,1);
   renderDropzone(bi);
   renderBank(bi);
-  document.getElementById(`fb-${bi}`).textContent = '';
+  setP2Fb(bi, '', '');
 }
 function resetBuilder(bi){
+  if(submitted || p2State[bi].solved) return;
   p2State[bi].placed = [];
   renderDropzone(bi);
   renderBank(bi);
-  document.getElementById(`fb-${bi}`).textContent = '';
-}
-function checkP2Item(bi){
-  const placed = p2State[bi].placed;
-  return placed.length === p2Data[bi].words.length &&
-    placed.every((tokIdx, order) => tokIdx === order);
+  setP2Fb(bi, '', '');
 }
 
 /* ============================== RENDER PHẦN 3: MÔ TẢ HÌNH ============================== */
@@ -682,23 +762,23 @@ function renderP4(){
 function gradeP1(){
   let correct = 0;
   p1Data.forEach((q,qi)=>{
-    document.querySelectorAll(`#q1-${qi} .opt`).forEach(node=>{
-      const oi = parseInt(node.dataset.o);
-      if(oi === q.answer) node.classList.add('correct');
-      else if(p1Answers[qi]===oi) node.classList.add('wrong');
-    });
-    if(p1Answers[qi] === q.answer) correct++;
+    if(p1State[qi].first) correct++;
+    if(!p1State[qi].solved){
+      const node = document.querySelector(`#q1-${qi} .opt[data-o="${q.ans}"]`);
+      node.classList.add('correct');
+      setQFb(qi, `Đáp án đúng: ${q.opts[q.ans][0]}`, 'no');
+    }
+    document.querySelectorAll(`#q1-${qi} .opt`).forEach(n=>n.classList.add('locked'));
   });
-  p1Locked = true;
   return correct;
 }
 function gradeP2(){
   let correct = 0;
   p2Data.forEach((item,bi)=>{
-    const ok = checkP2Item(bi);
-    const fb = document.getElementById(`fb-${bi}`);
-    if(ok){ fb.textContent = '✔ Chính xác'; fb.className='builder-feedback ok'; correct++; }
-    else{ fb.textContent = `✘ Chưa đúng — đáp án: ${item.words.join('')}`; fb.className='builder-feedback no'; }
+    if(p2State[bi].first) correct++;
+    if(!p2State[bi].solved){
+      setP2Fb(bi, `✘ Chưa đúng — đáp án: ${item.words.join('')}`, 'no');
+    }
   });
   return correct;
 }
@@ -736,6 +816,7 @@ function submitAll(){
     alert('Có lỗi xảy ra, vui lòng tải lại trang và nhập họ tên trước khi làm bài.');
     return;
   }
+  submitted = true;
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = 'Đang chấm bài…';
 
@@ -793,6 +874,7 @@ function syncToSheet(data){
 }
 
 /* ============================== INIT ============================== */
+arrangeOptions(p1Data);
 renderP1();
 renderP2();
 renderP3();
