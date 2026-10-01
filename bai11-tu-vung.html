@@ -191,31 +191,21 @@
   .opt.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
   .opt.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
 
-  /* ===== Part 2: matching ===== */
-  .match-wrap{ display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .match-col h4{
-    margin:0 0 10px 0; font-size:12px; text-transform:uppercase; letter-spacing:.06em;
-    color:var(--cam-chu); font-weight:800;
-  }
-  .match-item{
-    cursor:pointer; user-select:none;
-    border:1.6px solid var(--cam-vien); border-radius:10px;
-    padding:9px 12px; margin-bottom:8px;
-    background:#fff; font-size:14.5px;
-    display:flex; align-items:baseline; gap:8px;
-    transition: all .15s ease;
-  }
-  .match-item .cn{ font-family:'Noto Sans SC', sans-serif; font-weight:700; font-size:16.5px; }
-  .match-item .py{ font-size:11.5px; color:var(--muc-nhat); }
-  .match-item:hover{ border-color:var(--cam-dam); transform: translateX(2px); }
-  .match-item.active{ border-color:var(--xanh-duong); background:#E7EEFF; }
-  .match-item.matched{ border-color:var(--xanh-la); background:#EBFBEE; opacity:.72; cursor:default; }
-  .match-item.matched:hover{ transform:none; }
-  .match-item.shake{ animation: shake .35s; border-color:var(--do); background:#FFF0F0; }
-  @keyframes shake{
-    20%,60%{ transform:translateX(-5px);} 40%,80%{ transform:translateX(5px);} 100%{transform:translateX(0);}
-  }
-  .match-progress{ margin-top:14px; font-size:12.5px; color:var(--muc-nhat); font-weight:600; }
+  /* ===== phản hồi đúng/sai ngay sau khi chọn ===== */
+  .opt.locked{ pointer-events:none; }
+  .opt.wrong{ opacity:.8; }
+  .q-fb{ margin-top:9px; font-size:13px; font-weight:700; }
+  .q-fb:empty{ display:none; }
+  .q-fb.ok{ color:var(--xanh-la); }
+  .q-fb.no{ color:var(--do); }
+  .dropzone.done{ border-color:var(--xanh-la); border-style:solid; background:#EBFBEE; }
+  .dropzone.done .chip-placed{ cursor:default; border-color:var(--xanh-la); color:#2B8A3E; }
+  .blank-fb{ font-size:12.5px; font-weight:800; margin:0 4px; font-family:'Be Vietnam Pro',sans-serif; }
+  .blank-fb.ok{ color:var(--xanh-la); }
+  .blank-fb.no{ color:var(--do); }
+  select.blank-select.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
+  select.blank-select.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
+  .err-seg.locked{ pointer-events:none; }
 
   /* ===== Part 3: sentence builder ===== */
   .builder{
@@ -464,7 +454,6 @@
     .header{ padding: 100px 20px 22px 20px; text-align:center; }
     .badge{ left:50%; top:20px; transform:translateX(-50%); width:72px; height:72px; }
     .info-bar{ grid-template-columns: 1fr; }
-    .match-wrap{ grid-template-columns: 1fr; }
     .clock-grid{ grid-template-columns: 1fr 1fr; }
     .section-head .skill{ display:none; }
   }
@@ -499,7 +488,7 @@
       <div class="skill">🧭 Từ vựng</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Có 2 dạng câu hỏi: cho chữ Hán → chọn nghĩa tiếng Việt, hoặc cho nghĩa tiếng Việt → chọn chữ Hán đúng.</p>
+      <p class="instruction">Có 2 dạng câu hỏi: cho chữ Hán → chọn nghĩa tiếng Việt, hoặc cho nghĩa tiếng Việt → chọn chữ Hán đúng. Chọn sai bạn được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div id="p1"></div>
     </div>
   </div>
@@ -512,7 +501,7 @@
       <div class="skill">📝 Đọc hiểu</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Chọn từ thích hợp để điền vào chỗ trống trong đoạn văn, sau đó trả lời các câu hỏi bên dưới.</p>
+      <p class="instruction">Chọn từ thích hợp để điền vào chỗ trống trong đoạn văn, sau đó trả lời các câu hỏi bên dưới. Chọn sai bạn được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div class="cloze-box" id="clozeBox"></div>
       <h4 class="sub-h4">Câu hỏi đọc hiểu</h4>
       <div id="p2q"></div>
@@ -527,7 +516,7 @@
       <div class="skill">✍️ Viết · Ngữ pháp</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Bấm vào các từ theo đúng thứ tự để tạo thành câu. Bấm vào từ đã chọn (ở khung trên) nếu muốn bỏ ra.</p>
+      <p class="instruction">Bấm vào các từ theo đúng thứ tự để tạo thành câu. Bấm vào từ đã chọn (ở khung trên) nếu muốn bỏ ra. Xếp sai bạn được xếp lại (điểm tính theo <b>lần xếp đầu tiên</b>).</p>
       <div id="p3builder"></div>
     </div>
   </div>
@@ -610,7 +599,7 @@ const p1Data = [
 const clozeTemplate = "我们学校很大。教学楼在办公楼的{{1}}。图书馆在教学楼{{2}}，很近。食堂在图书馆的{{3}}。学校{{4}}有一个超市，就在宿舍旁边。超市{{5}}有很多巧克力，你可以买。你的书在桌子{{6}}。眼镜在抽屉{{7}}。";
 const clozePyLine = "Wǒmen xuéxiào hěn dà. Jiàoxuélóu zài bàngōnglóu de ___。Túshūguǎn zài jiàoxuélóu ___，hěn jìn。Shítáng zài túshūguǎn de ___。Xuéxiào ___ yǒu yí ge chāoshì, jiù zài sùshè pángbiān。Chāoshì ___ yǒu hěn duō qiǎokèlì, nǐ kěyǐ mǎi。Nǐ de shū zài zhuōzi ___。Yǎnjìng zài chōuti ___。";
 const blanksData = [
-  { answer:"北边", options:[["北边","běibian"],["南边","nánbian"],["西边","xībian"]] },
+  { answer:"南边", options:[["南边","nánbian"],["北边","běibian"],["西边","xībian"]] },
   { answer:"附近", options:[["附近","fùjìn"],["中间","zhōngjiān"],["旁边","pángbiān"]] },
   { answer:"对面", options:[["对面","duìmiàn"],["旁边","pángbiān"],["中间","zhōngjiān"]] },
   { answer:"还", options:[["还","hái"],["也","yě"],["都","dōu"]] },
@@ -620,7 +609,7 @@ const blanksData = [
 ];
 const cQuizData = [
   { text:"教学楼在办公楼的哪边？", py:"Jiàoxuélóu zài bàngōnglóu de nǎ biān?",
-    options:[["北边","běibian"],["南边","nánbian"],["西边","xībian"]], answer:0 },
+    options:[["南边","nánbian"],["北边","běibian"],["西边","xībian"]], answer:0 },
   { text:"食堂在哪儿？", py:"Shítáng zài nǎr?",
     options:[["图书馆的对面","túshūguǎn de duìmiàn"],["宿舍旁边","sùshè pángbiān"],["办公楼里边","bàngōnglóu lǐbian"]], answer:0 },
   { text:"超市在哪儿？", py:"Chāoshì zài nǎr?",
@@ -652,12 +641,6 @@ const p4KeywordSlots = [
 ];
 
 /* ============================== STATE ============================== */
-let p1Answers = new Array(p1Data.length).fill(null);
-let p1Locked = false;
-let cQuizAnswers = new Array(cQuizData.length).fill(null);
-let cQuizLocked = false;
-let p3State = p3Data.map(item => ({ placed: [], bank: shuffle(item.words.map((w,i)=>({w,i}))) }));
-
 /* ============================== HELPERS ============================== */
 function shuffle(arr){
   const a = arr.slice();
@@ -667,43 +650,125 @@ function shuffle(arr){
   }
   return a;
 }
+/* Lập kế hoạch vị trí đáp án đúng cho n câu (ks = số lựa chọn của mỗi câu):
+   - phân bố đều các vị trí
+   - KHÔNG có 3 câu liên tiếp cùng vị trí, KHÔNG có dãy tăng/giảm dần, KHÔNG lặp chu kỳ */
+function planPositions(ks){
+  const n = ks.length, kmin = Math.min(...ks), kmax = Math.max(...ks);
+  const uniform = (kmin === kmax);
+  const minCount = Math.floor(n / (kmax + 1));
+  const gen = () => uniform ? shuffle(Array.from({length:n}, (_,i)=> i % kmax)) : ks.map(k => Math.floor(Math.random()*k));
+  const balanced = seq => { for(let p=0;p<kmin;p++){ if(seq.filter(x=>x===p).length < minCount) return false; } return true; };
+  const patterned = seq => {
+    for(let i=0;i+2<n;i++){
+      const a=seq[i], b=seq[i+1], c=seq[i+2];
+      if(a===b && b===c) return true;
+      if(b-a===1 && c-b===1) return true;
+      if(a-b===1 && b-c===1) return true;
+    }
+    for(let p=1;p<=Math.min(4,n-1);p++){
+      let periodic = true;
+      for(let i=p;i<n;i++){ if(seq[i]!==seq[i-p]){ periodic=false; break; } }
+      if(periodic) return true;
+    }
+    return false;
+  };
+  let seq = gen();
+  for(let t=0;t<5000 && (patterned(seq) || !balanced(seq));t++){ seq = gen(); }
+  return seq;
+}
+function arrangeOptions(data, getIdx){
+  getIdx = getIdx || (q => q.answer);
+  const pos = planPositions(data.map(q => q.options.length));
+  data.forEach((q,i)=>{
+    const idx = getIdx(q);
+    const correct = q.options[idx];
+    const others = shuffle(q.options.filter((_,oi)=> oi !== idx));
+    others.splice(pos[i], 0, correct);
+    q.opts = others;
+    q.ans = pos[i];
+  });
+}
+let submitted = false;
+function newQState(){ return { attempts:0, wrong:[], solved:false, first:false }; }
 
-/* ============================== RENDER PHẦN 1 ============================== */
-function renderQuestionBlock(q, qi, prefix){
+let p1State = p1Data.map(newQState);
+let cqState = cQuizData.map(newQState);
+const MCQ = { p1:{data:p1Data, state:p1State}, cq:{data:cQuizData, state:cqState} };
+let blankState = blanksData.map(newQState);
+let p3State = p3Data.map(item => ({ placed: [], bank: shuffle(item.words.map((w,i)=>({w,i}))), attempts:0, solved:false, first:false }));
+/* ============================== MCQ DÙNG CHUNG (nhiều nhóm câu hỏi) ============================== */
+function optHTML(g, qi, oi, opt){
+  return `<div class="opt" data-g="${g}" data-q="${qi}" data-o="${oi}" onclick="selectMCQ('${g}',${qi},${oi})">
+    <span class="cn">${opt[0]}</span>${opt[1] ? `<span class="py-mini">${opt[1]}</span>` : ''}
+  </div>`;
+}
+function setQFb(g, qi, msg, cls){
+  const fb = document.getElementById(`qfb-${g}-${qi}`);
+  fb.textContent = msg;
+  fb.className = 'q-fb ' + (cls||'');
+}
+function selectMCQ(g, qi, oi){
+  if(submitted) return;
+  const q = MCQ[g].data[qi], st = MCQ[g].state[qi];
+  if(st.solved || st.wrong.includes(oi)) return;
+  const node = document.querySelector(`.opt[data-g="${g}"][data-q="${qi}"][data-o="${oi}"]`);
+  st.attempts++;
+  if(oi === q.ans){
+    st.solved = true;
+    st.first = (st.attempts === 1);
+    node.classList.add('correct');
+    document.querySelectorAll(`.opt[data-g="${g}"][data-q="${qi}"]`).forEach(n=>n.classList.add('locked'));
+    setQFb(g, qi, '✔ Chính xác!', 'ok');
+  } else {
+    st.wrong.push(oi);
+    node.classList.add('wrong','locked');
+    setQFb(g, qi, '✘ Chưa đúng — hãy chọn lại nhé!', 'no');
+  }
+}
+function renderQuestionBlock(q, qi, g){
   return `
-    <div class="q" id="${prefix}-${qi}">
+    <div class="q" id="q-${g}-${qi}">
       <div class="q-text">
         <span class="q-num">${qi+1}.</span> ${q.text}
         ${q.py ? `<span class="py-line">${q.py}</span>` : ''}
       </div>
       <div class="options">
-        ${q.options.map((opt,oi)=>`
-          <div class="opt" data-q="${qi}" data-o="${oi}" onclick="${prefix==='p1' ? `selectP1(${qi},${oi})` : `selectCQ(${qi},${oi})`}">
-            <span class="cn">${opt[0]}</span>${opt[1] ? `<span class="py-mini">${opt[1]}</span>` : ''}
-          </div>`).join('')}
+        ${q.opts.map((opt,oi)=> optHTML(g, qi, oi, opt)).join('')}
       </div>
+      <div class="q-fb" id="qfb-${g}-${qi}" aria-live="polite"></div>
     </div>`;
 }
+function gradeMCQ(g){
+  const { data, state } = MCQ[g];
+  let correct = 0;
+  data.forEach((q,qi)=>{
+    if(state[qi].first) correct++;
+    if(!state[qi].solved){
+      const node = document.querySelector(`.opt[data-g="${g}"][data-q="${qi}"][data-o="${q.ans}"]`);
+      node.classList.add('correct');
+      setQFb(g, qi, `Đáp án đúng: ${q.opts[q.ans][0]}`, 'no');
+    }
+    document.querySelectorAll(`.opt[data-g="${g}"][data-q="${qi}"]`).forEach(n=>n.classList.add('locked'));
+  });
+  return correct;
+}
+
+
+/* ============================== RENDER PHẦN 1 ============================== */
 function renderP1(){
   const el = document.getElementById('p1');
   el.innerHTML = p1Data.map((q,qi)=> renderQuestionBlock(q, qi, 'p1')).join('');
-}
-function selectP1(qi, oi){
-  if(p1Locked) return;
-  p1Answers[qi] = oi;
-  document.querySelectorAll(`#p1 .opt[data-q="${qi}"]`).forEach(o=>o.classList.remove('selected'));
-  document.querySelector(`#p1-${qi} .opt[data-o="${oi}"]`).classList.add('selected');
 }
 
 /* ============================== RENDER PHẦN 2: ĐIỀN TỪ & ĐỌC HIỂU ============================== */
 function renderClozeBox(){
   let html = clozeTemplate;
   blanksData.forEach((b,i)=>{
-    const opts = shuffle(b.options);
-    const selectHtml = `<select class="blank-select" id="blank-${i}">
+    const selectHtml = `<select class="blank-select" id="blank-${i}" onchange="onBlankChange(${i})">
       <option value="">?</option>
-      ${opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
-    </select>`;
+      ${b.opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
+    </select><span class="blank-fb" id="bfb-${i}" aria-live="polite"></span>`;
     html = html.replace(`{{${i+1}}}`, selectHtml);
   });
   document.getElementById('clozeBox').innerHTML = `<div class="cn-fixed">${html}</div><span class="cloze-py">${clozePyLine}</span>`;
@@ -711,13 +776,25 @@ function renderClozeBox(){
 function renderP2q(){
   const el = document.getElementById('p2q');
   el.innerHTML = cQuizData.map((q,qi)=> renderQuestionBlock(q, qi, 'cq')).join('');
+}function onBlankChange(i){
+  if(submitted) return;
+  const st = blankState[i], b = blanksData[i];
+  if(st.solved) return;
+  const sel = document.getElementById(`blank-${i}`), fb = document.getElementById(`bfb-${i}`);
+  if(!sel.value){ sel.classList.remove('wrong'); fb.textContent=''; fb.className='blank-fb'; return; }
+  st.attempts++;
+  if(sel.value === b.answer){
+    st.solved = true; st.first = (st.attempts === 1);
+    sel.classList.add('correct'); sel.classList.remove('wrong'); sel.disabled = true;
+    fb.textContent = '✔'; fb.className = 'blank-fb ok';
+  } else {
+    sel.classList.add('wrong'); sel.classList.remove('correct');
+    const opt = [...sel.options].find(o => o.value === sel.value);
+    if(opt) opt.disabled = true;
+    fb.textContent = '✘ chọn lại'; fb.className = 'blank-fb no';
+  }
 }
-function selectCQ(qi, oi){
-  if(cQuizLocked) return;
-  cQuizAnswers[qi] = oi;
-  document.querySelectorAll(`#p2q .opt[data-q="${qi}"]`).forEach(o=>o.classList.remove('selected'));
-  document.querySelector(`#cq-${qi} .opt[data-o="${oi}"]`).classList.add('selected');
-}
+
 
 /* ============================== RENDER PHẦN 3: SẮP XẾP CÂU ============================== */
 function renderP3(){
@@ -753,29 +830,49 @@ function renderDropzone(bi){
     return `<div class="chip-placed" onclick="removeChip(${bi}, ${order})">${w}${py ? `<span class="chip-py">${py}</span>` : ''}</div>`;
   }).join('');
 }
+function setP3Fb(bi, msg, cls){
+  const fb = document.getElementById(`fb-${bi}`);
+  fb.textContent = msg;
+  fb.className = 'builder-feedback ' + (cls||'');
+}
+function checkP3Item(bi){
+  const seq = p3State[bi].placed.map(t => p3Data[bi].words[t]).join('|');
+  return seq === p3Data[bi].words.join('|');
+}
 function placeChip(bi, tokIdx){
-  if(p3State[bi].placed.includes(tokIdx)) return;
-  p3State[bi].placed.push(tokIdx);
+  if(submitted) return;
+  const st = p3State[bi];
+  if(st.solved || st.placed.includes(tokIdx)) return;
+  st.placed.push(tokIdx);
   renderDropzone(bi);
   renderBank(bi);
+  if(st.placed.length === p3Data[bi].words.length){      // xếp đủ từ → báo ngay
+    st.attempts++;
+    if(checkP3Item(bi)){
+      st.solved = true;
+      st.first = (st.attempts === 1);
+      document.getElementById(`dz-${bi}`).classList.add('done');
+      setP3Fb(bi, '✔ Chính xác!', 'ok');
+    } else {
+      setP3Fb(bi, '✘ Chưa đúng — bấm vào từ để bỏ ra rồi sắp xếp lại nhé!', 'no');
+    }
+  }
 }
 function removeChip(bi, order){
+  if(submitted || p3State[bi].solved) return;
   p3State[bi].placed.splice(order,1);
   renderDropzone(bi);
   renderBank(bi);
-  document.getElementById(`fb-${bi}`).textContent = '';
+  setP3Fb(bi, '', '');
 }
 function resetBuilder(bi){
+  if(submitted || p3State[bi].solved) return;
   p3State[bi].placed = [];
   renderDropzone(bi);
   renderBank(bi);
-  document.getElementById(`fb-${bi}`).textContent = '';
+  setP3Fb(bi, '', '');
 }
-function checkP3Item(bi){
-  const placed = p3State[bi].placed;
-  return placed.length === p3Data[bi].words.length &&
-    placed.every((tokIdx, order) => tokIdx === order);
-}
+
 
 /* ============================== RENDER PHẦN 4 ============================== */
 function renderViPassage(){
@@ -783,44 +880,30 @@ function renderViPassage(){
 }
 
 /* ============================== GRADING ============================== */
-function gradeP1(){
-  let correct = 0;
-  p1Data.forEach((q,qi)=>{
-    document.querySelectorAll(`#p1-${qi} .opt`).forEach(node=>{
-      const oi = parseInt(node.dataset.o);
-      if(oi === q.answer) node.classList.add('correct');
-      else if(p1Answers[qi]===oi) node.classList.add('wrong');
-    });
-    if(p1Answers[qi] === q.answer) correct++;
-  });
-  p1Locked = true;
-  return correct;
-}
+function gradeP1(){ return gradeMCQ('p1'); }
 function gradeP2(){
   let correct = 0;
   blanksData.forEach((b,i)=>{
-    const sel = document.getElementById(`blank-${i}`);
-    if(sel.value === b.answer){ sel.classList.add('correct'); sel.classList.remove('wrong'); correct++; }
-    else{ sel.classList.add('wrong'); sel.classList.remove('correct'); }
+    const st = blankState[i];
+    const sel = document.getElementById(`blank-${i}`), fb = document.getElementById(`bfb-${i}`);
+    if(st.first) correct++;
+    if(!st.solved){
+      sel.value = b.answer; sel.classList.add('wrong'); sel.classList.remove('correct');
+      fb.textContent = `✘ đáp án: ${b.answer}`; fb.className = 'blank-fb no';
+    }
+    sel.disabled = true;
   });
-  cQuizData.forEach((q,qi)=>{
-    document.querySelectorAll(`#cq-${qi} .opt`).forEach(node=>{
-      const oi = parseInt(node.dataset.o);
-      if(oi === q.answer) node.classList.add('correct');
-      else if(cQuizAnswers[qi]===oi) node.classList.add('wrong');
-    });
-    if(cQuizAnswers[qi] === q.answer) correct++;
-  });
-  cQuizLocked = true;
+  correct += gradeMCQ('cq');
   return correct;
 }
 function gradeP3(){
   let correct = 0;
   p3Data.forEach((item,bi)=>{
-    const ok = checkP3Item(bi);
-    const fb = document.getElementById(`fb-${bi}`);
-    if(ok){ fb.textContent = '✔ Chính xác'; fb.className='builder-feedback ok'; correct++; }
-    else{ fb.textContent = `✘ Chưa đúng — đáp án: ${item.words.join('')}`; fb.className='builder-feedback no'; }
+    const st = p3State[bi];
+    if(st.first) correct++;
+    if(!st.solved){
+      setP3Fb(bi, `✘ Chưa đúng — đáp án: ${item.words.join('')}`, 'no');
+    }
   });
   return correct;
 }
@@ -857,6 +940,7 @@ function submitAll(){
     alert('Có lỗi xảy ra, vui lòng tải lại trang và nhập họ tên trước khi làm bài.');
     return;
   }
+  submitted = true;
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = 'Đang chấm bài…';
 
@@ -917,6 +1001,9 @@ function syncToSheet(data){
 }
 
 /* ============================== INIT ============================== */
+arrangeOptions(p1Data);
+arrangeOptions(cQuizData);
+arrangeOptions(blanksData, b => b.options.findIndex(o => o[0] === b.answer));
 renderP1();
 renderClozeBox();
 renderP2q();

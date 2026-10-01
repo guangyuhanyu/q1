@@ -191,31 +191,23 @@
   .opt.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
   .opt.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
 
-  /* ===== Part 2: matching ===== */
-  .match-wrap{ display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .match-col h4{
-    margin:0 0 10px 0; font-size:12px; text-transform:uppercase; letter-spacing:.06em;
-    color:var(--cam-chu); font-weight:800;
+  select.blank-select{
+    font-family:'Noto Sans SC', sans-serif; font-weight:700; font-size:15px;
+    border:1.6px solid var(--xanh-duong); border-radius:8px;
+    padding:6px 10px; background:#fff; color:var(--xanh-duong-toi);
+    margin:0 2px; cursor:pointer;
   }
-  .match-item{
-    cursor:pointer; user-select:none;
-    border:1.6px solid var(--cam-vien); border-radius:10px;
-    padding:9px 12px; margin-bottom:8px;
-    background:#fff; font-size:14.5px;
-    display:flex; align-items:baseline; gap:8px;
-    transition: all .15s ease;
-  }
-  .match-item .cn{ font-family:'Noto Sans SC', sans-serif; font-weight:700; font-size:16.5px; }
-  .match-item .py{ font-size:11.5px; color:var(--muc-nhat); }
-  .match-item:hover{ border-color:var(--cam-dam); transform: translateX(2px); }
-  .match-item.active{ border-color:var(--xanh-duong); background:#E7EEFF; }
-  .match-item.matched{ border-color:var(--xanh-la); background:#EBFBEE; opacity:.72; cursor:default; }
-  .match-item.matched:hover{ transform:none; }
-  .match-item.shake{ animation: shake .35s; border-color:var(--do); background:#FFF0F0; }
-  @keyframes shake{
-    20%,60%{ transform:translateX(-5px);} 40%,80%{ transform:translateX(5px);} 100%{transform:translateX(0);}
-  }
-  .match-progress{ margin-top:14px; font-size:12.5px; color:var(--muc-nhat); font-weight:600; }
+  .clock-selects{ display:flex; align-items:center; justify-content:center; gap:6px; margin-top:10px; flex-wrap:wrap; }
+  .clock-selects select{ min-width:72px; }
+  .cal-q-item select{ width:auto; min-width:140px; }
+
+  /* ===== điền chỗ trống: phản hồi ngay ===== */
+  .blank-fb{ font-size:12.5px; font-weight:800; margin:0 4px; font-family:'Be Vietnam Pro',sans-serif; }
+  .blank-fb.ok{ color:var(--xanh-la); }
+  .blank-fb.no{ color:var(--do); }
+  select.blank-select.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
+  select.blank-select.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
+  .err-seg.locked{ pointer-events:none; }
 
   /* ===== Part 3: sentence builder ===== */
   .builder{
@@ -464,7 +456,6 @@
     .header{ padding: 100px 20px 22px 20px; text-align:center; }
     .badge{ left:50%; top:20px; transform:translateX(-50%); width:72px; height:72px; }
     .info-bar{ grid-template-columns: 1fr; }
-    .match-wrap{ grid-template-columns: 1fr; }
     .clock-grid{ grid-template-columns: 1fr 1fr; }
     .section-head .skill{ display:none; }
   }
@@ -499,9 +490,9 @@
       <div class="skill">🕐 Giờ · Ngày tháng</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Nhìn mặt đồng hồ, viết giờ bằng tiếng Trung vào ô bên dưới mỗi hình.</p>
+      <p class="instruction">Nhìn mặt đồng hồ rồi chọn giờ và phút bằng tiếng Trung. Chọn sai được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div id="p1clocks"></div>
-      <p class="instruction" style="margin-top:22px;">Nhìn tờ lịch tháng 6 bên dưới rồi trả lời các câu hỏi.</p>
+      <p class="instruction" style="margin-top:22px;">Nhìn tờ lịch tháng 6 bên dưới rồi chọn đáp án đúng cho mỗi câu hỏi. Chọn sai được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div id="calendarBox"></div>
       <div id="p1calendarQ"></div>
     </div>
@@ -515,7 +506,7 @@
       <div class="skill">📝 Từ vựng</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Chọn từ thích hợp để điền vào chỗ trống trong đoạn văn.</p>
+      <p class="instruction">Chọn từ thích hợp để điền vào chỗ trống trong đoạn văn. Chọn sai được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div class="cloze-box" id="clozeBox"></div>
     </div>
   </div>
@@ -528,7 +519,7 @@
       <div class="skill">🔍 Ngữ pháp</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Mỗi câu dưới đây có 1 chỗ sai. Bấm vào phần bị sai trong câu.</p>
+      <p class="instruction">Mỗi câu dưới đây có 1 chỗ sai. Bấm vào phần bị sai trong câu. Bấm sai được bấm lại (điểm tính theo <b>lần bấm đầu tiên</b>).</p>
       <div id="p3errors"></div>
     </div>
   </div>
@@ -585,10 +576,10 @@ const SHEET_WEBAPP_URL = ""; // <-- dán URL Google Apps Script Web App vào đ�
 
 /* ================= DỮ LIỆU PHẦN 1: XEM GIỜ & XEM LỊCH ================= */
 const clockData = [
-  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(210.0 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(0 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourKw:["七","7"], minKw:["整","00","点"] },
-  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(105.0 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(180 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourKw:["三","3"], minKw:["半","30"] },
-  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(277.5 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(90 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourKw:["九","9"], minKw:["一刻","15"] },
-  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(322.5 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(270 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourKw:["十","10"], minKw:["四十五","45"] },
+  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(210.0 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(0 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourAnswer:"七", hourOptions:[["七","qī"],["一","yī"],["九","jiǔ"],["十","shí"]], minuteAnswer:"整" },
+  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(105.0 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(180 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourAnswer:"三", hourOptions:[["三","sān"],["二","èr"],["八","bā"],["十二","shí’èr"]], minuteAnswer:"半" },
+  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(277.5 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(90 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourAnswer:"九", hourOptions:[["九","jiǔ"],["六","liù"],["七","qī"],["十一","shíyī"]], minuteAnswer:"一刻" },
+  { svg:`<svg viewBox="0 0 200 200" class="clock-svg">      <circle cx="100" cy="100" r="92" fill="#FFFDF9" stroke="var(--cam-dam)" stroke-width="5"/>      <line x1="100.0" y1="18.0" x2="100.0" y2="26.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="29.0" x2="137.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="59.0" x2="164.1" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="182.0" y1="100.0" x2="174.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="171.0" y1="141.0" x2="164.1" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="141.0" y1="171.0" x2="137.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="100.0" y1="182.0" x2="100.0" y2="174.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="171.0" x2="63.0" y2="164.1" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="141.0" x2="35.9" y2="137.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="18.0" y1="100.0" x2="26.0" y2="100.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="29.0" y1="59.0" x2="35.9" y2="63.0" stroke="var(--muc-nhat)" stroke-width="2"/><line x1="59.0" y1="29.0" x2="63.0" y2="35.9" stroke="var(--muc-nhat)" stroke-width="2"/>      <text x="100" y="32" text-anchor="middle" class="clock-num">12</text>      <text x="168" y="106" text-anchor="middle" class="clock-num">3</text>      <text x="100" y="178" text-anchor="middle" class="clock-num">6</text>      <text x="32" y="106" text-anchor="middle" class="clock-num">9</text>      <line x1="100" y1="100" x2="100" y2="52" stroke="var(--muc)" stroke-width="6" stroke-linecap="round" transform="rotate(322.5 100 100)"/>      <line x1="100" y1="100" x2="100" y2="28" stroke="var(--xanh-duong-toi)" stroke-width="4" stroke-linecap="round" transform="rotate(270 100 100)"/>      <circle cx="100" cy="100" r="6" fill="var(--cam-chu)"/>    </svg>`, hourAnswer:"十", hourOptions:[["十","shí"],["四","sì"],["九","jiǔ"],["十二","shí’èr"]], minuteAnswer:"三刻" },
 ];
 const calendarData = {
   month: "6月 (Tháng 6)",
@@ -598,10 +589,10 @@ const calendarData = {
   birthdayDate: 21,
 };
 const calendarQData = [
-  { text:"“今天” (ô xanh) là ngày mấy, tháng mấy?", keywords:["十八"] },
-  { text:"“今天” (ô xanh) là thứ mấy?", keywords:["星期四"] },
-  { text:"Sinh nhật của 小雨 (ô cam) là ngày mấy?", keywords:["二十一"] },
-  { text:"Sinh nhật của 小雨 (ô cam) là thứ mấy?", keywords:["星期天","星期日"] },
+  { text:"“今天 (jīntiān)” là ngày mấy trong tháng 6?", options:[["十八","shíbā"],["十六","shíliù"],["十七","shíqī"],["十九","shíjiǔ"]], answer:0 },
+  { text:"“今天 (jīntiān)” là thứ mấy?", options:[["星期四","xīngqīsì"],["星期二","xīngqī’èr"],["星期五","xīngqīwǔ"],["星期六","xīngqīliù"]], answer:0 },
+  { text:"Sinh nhật của 小雨 (Xiǎoyǔ) là ngày mấy?", options:[["二十一","èrshíyī"],["十九","shíjiǔ"],["二十","èrshí"],["二十二","èrshí’èr"]], answer:0 },
+  { text:"Sinh nhật của 小雨 (Xiǎoyǔ) là thứ mấy?", options:[["星期日","xīngqīrì"],["星期二","xīngqī’èr"],["星期五","xīngqīwǔ"],["星期六","xīngqīliù"]], answer:0 },
 ];
 
 /* ================= DỮ LIỆU PHẦN 2: ĐIỀN TỪ VÀO ĐOẠN VĂN ================= */
@@ -614,7 +605,7 @@ const blanksData = [
   { answer:"等", options:[["等","děng"],["见面","jiànmiàn"],["出发","chūfā"]] },
   { answer:"吧", options:[["吧","ba"],["啊","a"],["呢","ne"]] },
   { answer:"差", options:[["差","chà"],["半","bàn"],["刻","kè"]] },
-  { answer:"行", options:[["行","xíng"],["好","hǎo"],["是","shì"]] },
+  { answer:"行", options:[["行","xíng"],["呢","ne"],["是","shì"]] },
 ];
 
 /* ================= DỮ LIỆU PHẦN 3: TÌM LỖI SAI ================= */
@@ -640,8 +631,58 @@ const p4KeywordSlots = [
 ];
 
 /* ============================== STATE ============================== */
-let errorAnswers = new Array(errorData.length).fill(null);
-let errorLocked = false;
+let submitted = false;
+function newSelState(){ return { attempts:0, solved:false, first:false }; }
+const MINUTE_SET = [["整","zhěng"],["一刻","yí kè"],["半","bàn"],["三刻","sān kè"]];
+const clockHourQ = clockData.map(c => ({ options: c.hourOptions, answer: 0 }));
+const clockMinuteQ = clockData.map(c => {
+  const correct = MINUTE_SET.find(x => x[0] === c.minuteAnswer);
+  const rest = MINUTE_SET.filter(x => x[0] !== c.minuteAnswer);
+  return { options: [correct, ...rest], answer: 0 };
+});
+const calendarQArr = calendarQData.map(q => ({ options: q.options, answer: q.answer }));
+let clockHState = clockData.map(newSelState);
+let clockMState = clockData.map(newSelState);
+let calqState = calendarQData.map(newSelState);
+let blankState = blanksData.map(newSelState);
+let errorState = errorData.map(()=>({ attempts:0, wrong:[], solved:false, first:false }));
+
+/* Lập kế hoạch vị trí đáp án đúng cho n câu, mỗi câu k lựa chọn:
+   - phân bố đều các vị trí
+   - KHÔNG có 3 câu liên tiếp cùng vị trí, KHÔNG có dãy tăng/giảm dần, KHÔNG lặp chu kỳ */
+function planPositions(n, k){
+  const base = Array.from({length:n}, (_,i)=> i % k);
+  const bad = seq => {
+    for(let i=0;i+2<n;i++){
+      const a=seq[i], b=seq[i+1], c=seq[i+2];
+      if(a===b && b===c) return true;
+      if(b-a===1 && c-b===1) return true;
+      if(a-b===1 && b-c===1) return true;
+    }
+    for(let p=1;p<=Math.min(4,n-1);p++){
+      let periodic = true;
+      for(let i=p;i<n;i++){ if(seq[i]!==seq[i-p]){ periodic=false; break; } }
+      if(periodic) return true;
+    }
+    return false;
+  };
+  let seq = shuffle(base);
+  for(let t=0;t<1000 && bad(seq);t++){ seq = shuffle(base); }
+  return seq;
+}
+function arrangeOptions(data, getIdx){
+  getIdx = getIdx || (q => q.answer);
+  const k = data[0].options.length;
+  const pos = planPositions(data.length, k);
+  data.forEach((q,i)=>{
+    const idx = getIdx(q);
+    const correct = q.options[idx];
+    const others = shuffle(q.options.filter((_,oi)=> oi !== idx));
+    others.splice(pos[i], 0, correct);
+    q.opts = others;
+    q.ans = pos[i];
+  });
+}
 
 /* ============================== HELPERS ============================== */
 function shuffle(arr){
@@ -660,8 +701,42 @@ function renderClocks(){
     <div class="clock-item">
       <div class="clock-label">Đồng hồ ${i+1}</div>
       ${c.svg}
-      <input type="text" id="clock-${i}" placeholder="VD: 五点半">
+      <div class="clock-selects">
+        <select class="blank-select" id="clk-h-${i}" onchange="onClockChange('h',${i})">
+          <option value="">Giờ?</option>
+          ${clockHourQ[i].opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
+        </select>
+        <span>点</span>
+        <select class="blank-select" id="clk-m-${i}" onchange="onClockChange('m',${i})">
+          <option value="">Phút?</option>
+          ${clockMinuteQ[i].opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
+        </select>
+      </div>
+      <span class="blank-fb" id="clkfb-${i}" aria-live="polite"></span>
     </div>`).join('') + `</div>`;
+}
+function updateClockFb(i){
+  const fb = document.getElementById(`clkfb-${i}`);
+  if(clockHState[i].solved && clockMState[i].solved){ fb.textContent = '✔ Chính xác!'; fb.className = 'blank-fb ok'; }
+}
+function onClockChange(kind, i){
+  if(submitted) return;
+  const isH = kind === 'h';
+  const Q = isH ? clockHourQ[i] : clockMinuteQ[i];
+  const st = isH ? clockHState[i] : clockMState[i];
+  if(st.solved) return;
+  const sel = document.getElementById(`clk-${kind}-${i}`);
+  if(!sel.value){ sel.classList.remove('wrong'); return; }
+  st.attempts++;
+  if(sel.value === Q.opts[Q.ans][0]){
+    st.solved = true; st.first = (st.attempts === 1);
+    sel.classList.add('correct'); sel.classList.remove('wrong'); sel.disabled = true;
+  } else {
+    sel.classList.add('wrong'); sel.classList.remove('correct');
+    const opt = [...sel.options].find(o => o.value === sel.value);
+    if(opt) opt.disabled = true;
+  }
+  updateClockFb(i);
 }
 function renderCalendar(){
   const el = document.getElementById('calendarBox');
@@ -688,8 +763,8 @@ function renderCalendar(){
         <tbody>${rowsHtml}</tbody>
       </table>
       <div class="calendar-legend">
-        <span><span class="legend-dot" style="background:var(--xanh-duong);"></span> 今天 (hôm nay)</span>
-        <span><span class="legend-dot" style="background:var(--cam-dam);"></span> 小雨的生日 (sinh nhật Tiểu Vũ)</span>
+        <span><span class="legend-dot" style="background:var(--xanh-duong);"></span> 今天 (jīntiān)</span>
+        <span><span class="legend-dot" style="background:var(--cam-dam);"></span> 小雨的生日 (Xiǎoyǔ de shēngrì)</span>
       </div>
     </div>`;
 }
@@ -698,22 +773,61 @@ function renderCalendarQ(){
   el.innerHTML = calendarQData.map((q,i)=>`
     <div class="cal-q-item">
       <div class="q-cal-text"><b>${i+1}.</b> ${q.text}</div>
-      <input type="text" id="calq-${i}" placeholder="Nhập câu trả lời…">
+      <select class="blank-select" id="calq-${i}" onchange="onCalqChange(${i})">
+        <option value="">?</option>
+        ${calendarQArr[i].opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
+      </select>
+      <span class="blank-fb" id="calqfb-${i}" aria-live="polite"></span>
     </div>`).join('');
+}
+function onCalqChange(i){
+  if(submitted) return;
+  const Q = calendarQArr[i], st = calqState[i];
+  if(st.solved) return;
+  const sel = document.getElementById(`calq-${i}`), fb = document.getElementById(`calqfb-${i}`);
+  if(!sel.value){ sel.classList.remove('wrong'); fb.textContent=''; fb.className='blank-fb'; return; }
+  st.attempts++;
+  if(sel.value === Q.opts[Q.ans][0]){
+    st.solved = true; st.first = (st.attempts === 1);
+    sel.classList.add('correct'); sel.classList.remove('wrong'); sel.disabled = true;
+    fb.textContent = '✔'; fb.className = 'blank-fb ok';
+  } else {
+    sel.classList.add('wrong'); sel.classList.remove('correct');
+    const opt = [...sel.options].find(o => o.value === sel.value);
+    if(opt) opt.disabled = true;
+    fb.textContent = '✘ chọn lại'; fb.className = 'blank-fb no';
+  }
 }
 
 /* ============================== RENDER PHẦN 2: ĐIỀN TỪ ============================== */
 function renderClozeBox(){
   let html = clozeTemplate;
   blanksData.forEach((b,i)=>{
-    const opts = shuffle(b.options);
-    const selectHtml = `<select class="blank-select" id="blank-${i}">
+    const selectHtml = `<select class="blank-select" id="blank-${i}" onchange="onBlankChange(${i})">
       <option value="">?</option>
-      ${opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
-    </select>`;
+      ${b.opts.map(o=>`<option value="${o[0]}">${o[0]} (${o[1]})</option>`).join('')}
+    </select><span class="blank-fb" id="bfb-${i}" aria-live="polite"></span>`;
     html = html.replace(`{{${i+1}}}`, selectHtml);
   });
   document.getElementById('clozeBox').innerHTML = `<div class="cn-fixed">${html}</div><span class="cloze-py">${clozePyLine}</span>`;
+}
+function onBlankChange(i){
+  if(submitted) return;
+  const st = blankState[i], b = blanksData[i];
+  if(st.solved) return;
+  const sel = document.getElementById(`blank-${i}`), fb = document.getElementById(`bfb-${i}`);
+  if(!sel.value){ sel.classList.remove('wrong'); fb.textContent=''; fb.className='blank-fb'; return; }
+  st.attempts++;
+  if(sel.value === b.answer){
+    st.solved = true; st.first = (st.attempts === 1);
+    sel.classList.add('correct'); sel.classList.remove('wrong'); sel.disabled = true;
+    fb.textContent = '✔'; fb.className = 'blank-fb ok';
+  } else {
+    sel.classList.add('wrong'); sel.classList.remove('correct');
+    const opt = [...sel.options].find(o => o.value === sel.value);
+    if(opt) opt.disabled = true;
+    fb.textContent = '✘ chọn lại'; fb.className = 'blank-fb no';
+  }
 }
 
 /* ============================== RENDER PHẦN 3: TÌM LỖI SAI ============================== */
@@ -729,10 +843,22 @@ function renderErrors(){
     </div>`).join('');
 }
 function selectError(i, si){
-  if(errorLocked) return;
-  errorAnswers[i] = si;
-  document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>n.classList.remove('selected'));
-  document.querySelector(`#err-${i} .err-seg[data-s="${si}"]`).classList.add('selected');
+  if(submitted) return;
+  const item = errorData[i], st = errorState[i];
+  if(st.solved || st.wrong.includes(si)) return;
+  const node = document.querySelector(`#err-${i} .err-seg[data-s="${si}"]`);
+  const fb = document.getElementById(`errfb-${i}`);
+  st.attempts++;
+  if(si === item.errIdx){
+    st.solved = true; st.first = (st.attempts === 1);
+    node.classList.add('correct');
+    document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>n.classList.add('locked'));
+    fb.textContent = '✔ Chính xác'; fb.className = 'err-feedback ok';
+  } else {
+    st.wrong.push(si);
+    node.classList.add('wrong','locked');
+    fb.textContent = '✘ Chưa đúng — bấm phần khác nhé!'; fb.className = 'err-feedback no';
+  }
 }
 
 /* ============================== RENDER PHẦN 4 ============================== */
@@ -744,44 +870,57 @@ function renderViPassage(){
 function gradeP1(){
   let correct = 0;
   clockData.forEach((c,i)=>{
-    const input = document.getElementById(`clock-${i}`);
-    const val = input.value || '';
-    const hourOk = c.hourKw.some(k=>val.includes(k));
-    const minOk = c.minKw.some(k=>val.includes(k));
-    if(hourOk && minOk){ input.classList.add('correct'); input.classList.remove('wrong'); correct++; }
-    else{ input.classList.add('wrong'); input.classList.remove('correct'); }
+    if(clockHState[i].first && clockMState[i].first) correct++;
+    const selH = document.getElementById(`clk-h-${i}`), selM = document.getElementById(`clk-m-${i}`);
+    if(!clockHState[i].solved){ selH.value = clockHourQ[i].opts[clockHourQ[i].ans][0]; selH.classList.add('wrong'); selH.classList.remove('correct'); }
+    if(!clockMState[i].solved){ selM.value = clockMinuteQ[i].opts[clockMinuteQ[i].ans][0]; selM.classList.add('wrong'); selM.classList.remove('correct'); }
+    selH.disabled = true; selM.disabled = true;
+    const fb = document.getElementById(`clkfb-${i}`);
+    if(clockHState[i].solved && clockMState[i].solved){ fb.textContent='✔ Chính xác!'; fb.className='blank-fb ok'; }
+    else{
+      const mAns = clockMinuteQ[i].opts[clockMinuteQ[i].ans][0];
+      fb.textContent = `✘ đáp án: ${clockHourQ[i].opts[clockHourQ[i].ans][0]}点${mAns==='整'?'':mAns}`;
+      fb.className = 'blank-fb no';
+    }
   });
   calendarQData.forEach((q,i)=>{
-    const input = document.getElementById(`calq-${i}`);
-    const val = input.value || '';
-    const ok = q.keywords.some(k=>val.includes(k));
-    if(ok){ input.classList.add('correct'); input.classList.remove('wrong'); correct++; }
-    else{ input.classList.add('wrong'); input.classList.remove('correct'); }
+    if(calqState[i].first) correct++;
+    const sel = document.getElementById(`calq-${i}`), fb = document.getElementById(`calqfb-${i}`);
+    if(!calqState[i].solved){
+      sel.value = calendarQArr[i].opts[calendarQArr[i].ans][0];
+      sel.classList.add('wrong'); sel.classList.remove('correct');
+      fb.textContent = `✘ đáp án: ${sel.value}`; fb.className = 'blank-fb no';
+    }
+    sel.disabled = true;
   });
   return correct;
 }
 function gradeP2(){
   let correct = 0;
   blanksData.forEach((b,i)=>{
-    const sel = document.getElementById(`blank-${i}`);
-    if(sel.value === b.answer){ sel.classList.add('correct'); sel.classList.remove('wrong'); correct++; }
-    else{ sel.classList.add('wrong'); sel.classList.remove('correct'); }
+    const st = blankState[i];
+    const sel = document.getElementById(`blank-${i}`), fb = document.getElementById(`bfb-${i}`);
+    if(st.first) correct++;
+    if(!st.solved){
+      sel.value = b.answer; sel.classList.add('wrong'); sel.classList.remove('correct');
+      fb.textContent = `✘ đáp án: ${b.answer}`; fb.className = 'blank-fb no';
+    }
+    sel.disabled = true;
   });
   return correct;
 }
 function gradeP3(){
   let correct = 0;
   errorData.forEach((item,i)=>{
-    const fb = document.getElementById(`errfb-${i}`);
-    document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>{
-      const si = parseInt(n.dataset.s);
-      if(si === item.errIdx) n.classList.add('correct');
-      else if(errorAnswers[i]===si) n.classList.add('wrong');
-    });
-    if(errorAnswers[i] === item.errIdx){ fb.textContent='✔ Chính xác'; fb.className='err-feedback ok'; correct++; }
-    else{ fb.textContent=`✘ Chỗ sai là: "${item.segs[item.errIdx]}"`; fb.className='err-feedback no'; }
+    if(errorState[i].first) correct++;
+    if(!errorState[i].solved){
+      const node = document.querySelector(`#err-${i} .err-seg[data-s="${item.errIdx}"]`);
+      node.classList.add('correct');
+      document.getElementById(`errfb-${i}`).textContent = `✘ Chỗ sai là: "${item.segs[item.errIdx]}"`;
+      document.getElementById(`errfb-${i}`).className = 'err-feedback no';
+    }
+    document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>n.classList.add('locked'));
   });
-  errorLocked = true;
   return correct;
 }
 function gradeP4(){
@@ -817,6 +956,7 @@ function submitAll(){
     alert('Có lỗi xảy ra, vui lòng tải lại trang và nhập họ tên trước khi làm bài.');
     return;
   }
+  submitted = true;
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = 'Đang chấm bài…';
 
@@ -877,6 +1017,10 @@ function syncToSheet(data){
 }
 
 /* ============================== INIT ============================== */
+arrangeOptions(clockHourQ);
+arrangeOptions(clockMinuteQ);
+arrangeOptions(calendarQArr);
+arrangeOptions(blanksData, b => b.options.findIndex(o => o[0] === b.answer));
 renderClocks();
 renderCalendar();
 renderCalendarQ();

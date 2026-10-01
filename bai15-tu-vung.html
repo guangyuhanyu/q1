@@ -191,31 +191,21 @@
   .opt.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
   .opt.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
 
-  /* ===== Part 2: matching ===== */
-  .match-wrap{ display:grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .match-col h4{
-    margin:0 0 10px 0; font-size:12px; text-transform:uppercase; letter-spacing:.06em;
-    color:var(--cam-chu); font-weight:800;
-  }
-  .match-item{
-    cursor:pointer; user-select:none;
-    border:1.6px solid var(--cam-vien); border-radius:10px;
-    padding:9px 12px; margin-bottom:8px;
-    background:#fff; font-size:14.5px;
-    display:flex; align-items:baseline; gap:8px;
-    transition: all .15s ease;
-  }
-  .match-item .cn{ font-family:'Noto Sans SC', sans-serif; font-weight:700; font-size:16.5px; }
-  .match-item .py{ font-size:11.5px; color:var(--muc-nhat); }
-  .match-item:hover{ border-color:var(--cam-dam); transform: translateX(2px); }
-  .match-item.active{ border-color:var(--xanh-duong); background:#E7EEFF; }
-  .match-item.matched{ border-color:var(--xanh-la); background:#EBFBEE; opacity:.72; cursor:default; }
-  .match-item.matched:hover{ transform:none; }
-  .match-item.shake{ animation: shake .35s; border-color:var(--do); background:#FFF0F0; }
-  @keyframes shake{
-    20%,60%{ transform:translateX(-5px);} 40%,80%{ transform:translateX(5px);} 100%{transform:translateX(0);}
-  }
-  .match-progress{ margin-top:14px; font-size:12.5px; color:var(--muc-nhat); font-weight:600; }
+  /* ===== phản hồi đúng/sai ngay sau khi chọn ===== */
+  .opt.locked{ pointer-events:none; }
+  .opt.wrong{ opacity:.8; }
+  .q-fb{ margin-top:9px; font-size:13px; font-weight:700; }
+  .q-fb:empty{ display:none; }
+  .q-fb.ok{ color:var(--xanh-la); }
+  .q-fb.no{ color:var(--do); }
+  .dropzone.done{ border-color:var(--xanh-la); border-style:solid; background:#EBFBEE; }
+  .dropzone.done .chip-placed{ cursor:default; border-color:var(--xanh-la); color:#2B8A3E; }
+  .blank-fb{ font-size:12.5px; font-weight:800; margin:0 4px; font-family:'Be Vietnam Pro',sans-serif; }
+  .blank-fb.ok{ color:var(--xanh-la); }
+  .blank-fb.no{ color:var(--do); }
+  select.blank-select.correct{ border-color:var(--xanh-la); background:#EBFBEE; color:#2B8A3E; }
+  select.blank-select.wrong{ border-color:var(--do); background:#FFF0F0; color:#C92A2A; }
+  .err-seg.locked{ pointer-events:none; }
 
   /* ===== Part 3: sentence builder ===== */
   .builder{
@@ -515,7 +505,6 @@
     .header{ padding: 100px 20px 22px 20px; text-align:center; }
     .badge{ left:50%; top:20px; transform:translateX(-50%); width:72px; height:72px; }
     .info-bar{ grid-template-columns: 1fr; }
-    .match-wrap{ grid-template-columns: 1fr; }
     .clock-grid{ grid-template-columns: 1fr 1fr; }
     .section-head .skill{ display:none; }
   }
@@ -550,7 +539,7 @@
       <div class="skill">🔎 Từ vựng</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Trong 4 từ cho sẵn, chọn từ có nghĩa KHÁC nhóm (khác chủ đề) so với 3 từ còn lại.</p>
+      <p class="instruction">Trong 4 từ cho sẵn, chọn từ có nghĩa KHÁC nhóm (khác chủ đề) so với 3 từ còn lại. Chọn sai bạn được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div id="p1odd"></div>
     </div>
   </div>
@@ -563,7 +552,7 @@
       <div class="skill">🔎 Ngữ pháp</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Trong 4 từ cho sẵn, chọn từ khác TỪ LOẠI (động từ/danh từ/tính từ/lượng từ/liên từ...) so với 3 từ còn lại.</p>
+      <p class="instruction">Trong 4 từ cho sẵn, chọn từ khác TỪ LOẠI (động từ/danh từ/tính từ/lượng từ/liên từ...) so với 3 từ còn lại. Chọn sai bạn được chọn lại (điểm tính theo <b>lần chọn đầu tiên</b>).</p>
       <div id="p2odd"></div>
     </div>
   </div>
@@ -576,7 +565,7 @@
       <div class="skill">🔍 Ngữ pháp</div>
     </div>
     <div class="section-body">
-      <p class="instruction">Mỗi câu có 1 từ dùng sai. Bấm vào từ sai, sau đó gõ từ đúng vào ô bên dưới.</p>
+      <p class="instruction">Mỗi câu có 1 từ dùng sai. Bấm vào từ sai, sau đó gõ từ đúng vào ô bên dưới. Bấm sai được bấm lại (điểm phần bấm tính theo <b>lần bấm đầu tiên</b>).</p>
       <div id="p3errors"></div>
     </div>
   </div>
@@ -671,13 +660,6 @@ const p4Data = [
 ];
 
 /* ============================== STATE ============================== */
-let oddMeaningAnswers = new Array(oddMeaningData.length).fill(null);
-let oddMeaningLocked = false;
-let oddTypeAnswers = new Array(oddTypeData.length).fill(null);
-let oddTypeLocked = false;
-let errorAnswers = new Array(errorData.length).fill(null);
-let errorLocked = false;
-
 /* ============================== HELPERS ============================== */
 function shuffle(arr){
   const a = arr.slice();
@@ -687,41 +669,118 @@ function shuffle(arr){
   }
   return a;
 }
+/* Lập kế hoạch vị trí đáp án đúng cho n câu (ks = số lựa chọn của mỗi câu):
+   - phân bố đều các vị trí
+   - KHÔNG có 3 câu liên tiếp cùng vị trí, KHÔNG có dãy tăng/giảm dần, KHÔNG lặp chu kỳ */
+function planPositions(ks){
+  const n = ks.length, kmin = Math.min(...ks), kmax = Math.max(...ks);
+  const uniform = (kmin === kmax);
+  const minCount = Math.floor(n / (kmax + 1));
+  const gen = () => uniform ? shuffle(Array.from({length:n}, (_,i)=> i % kmax)) : ks.map(k => Math.floor(Math.random()*k));
+  const balanced = seq => { for(let p=0;p<kmin;p++){ if(seq.filter(x=>x===p).length < minCount) return false; } return true; };
+  const patterned = seq => {
+    for(let i=0;i+2<n;i++){
+      const a=seq[i], b=seq[i+1], c=seq[i+2];
+      if(a===b && b===c) return true;
+      if(b-a===1 && c-b===1) return true;
+      if(a-b===1 && b-c===1) return true;
+    }
+    for(let p=1;p<=Math.min(4,n-1);p++){
+      let periodic = true;
+      for(let i=p;i<n;i++){ if(seq[i]!==seq[i-p]){ periodic=false; break; } }
+      if(periodic) return true;
+    }
+    return false;
+  };
+  let seq = gen();
+  for(let t=0;t<5000 && (patterned(seq) || !balanced(seq));t++){ seq = gen(); }
+  return seq;
+}
+function arrangeOptions(data, getIdx){
+  getIdx = getIdx || (q => q.answer);
+  const pos = planPositions(data.map(q => q.options.length));
+  data.forEach((q,i)=>{
+    const idx = getIdx(q);
+    const correct = q.options[idx];
+    const others = shuffle(q.options.filter((_,oi)=> oi !== idx));
+    others.splice(pos[i], 0, correct);
+    q.opts = others;
+    q.ans = pos[i];
+  });
+}
+let submitted = false;
+function newQState(){ return { attempts:0, wrong:[], solved:false, first:false }; }
 
-/* ============================== RENDER PHẦN 1 & 2: TỪ KHÁC NHÓM ============================== */
-function renderQuestionBlock(q, qi, prefix, onclickFn){
+let omState = oddMeaningData.map(newQState);
+let otState = oddTypeData.map(newQState);
+const MCQ = { om:{data:oddMeaningData, state:omState}, ot:{data:oddTypeData, state:otState} };
+let errorState = errorData.map(()=>({ attempts:0, wrong:[], solved:false, first:false }));
+/* ============================== MCQ DÙNG CHUNG (nhiều nhóm câu hỏi) ============================== */
+function optHTML(g, qi, oi, opt){
+  return `<div class="opt" data-g="${g}" data-q="${qi}" data-o="${oi}" onclick="selectMCQ('${g}',${qi},${oi})">
+    <span class="cn">${opt[0]}</span>${opt[1] ? `<span class="py-mini">${opt[1]}</span>` : ''}
+  </div>`;
+}
+function setQFb(g, qi, msg, cls){
+  const fb = document.getElementById(`qfb-${g}-${qi}`);
+  fb.textContent = msg;
+  fb.className = 'q-fb ' + (cls||'');
+}
+function selectMCQ(g, qi, oi){
+  if(submitted) return;
+  const q = MCQ[g].data[qi], st = MCQ[g].state[qi];
+  if(st.solved || st.wrong.includes(oi)) return;
+  const node = document.querySelector(`.opt[data-g="${g}"][data-q="${qi}"][data-o="${oi}"]`);
+  st.attempts++;
+  if(oi === q.ans){
+    st.solved = true;
+    st.first = (st.attempts === 1);
+    node.classList.add('correct');
+    document.querySelectorAll(`.opt[data-g="${g}"][data-q="${qi}"]`).forEach(n=>n.classList.add('locked'));
+    setQFb(g, qi, '✔ Chính xác!', 'ok');
+  } else {
+    st.wrong.push(oi);
+    node.classList.add('wrong','locked');
+    setQFb(g, qi, '✘ Chưa đúng — hãy chọn lại nhé!', 'no');
+  }
+}
+function renderQuestionBlock(q, qi, g){
   return `
-    <div class="q" id="${prefix}-${qi}">
+    <div class="q" id="q-${g}-${qi}">
       <div class="q-text">
-        <span class="q-num">Câu ${qi+1}:</span>
+        <span class="q-num">${qi+1}.</span> ${q.text}
+        ${q.py ? `<span class="py-line">${q.py}</span>` : ''}
       </div>
       <div class="options">
-        ${q.options.map((opt,oi)=>`
-          <div class="opt" data-q="${qi}" data-o="${oi}" onclick="${onclickFn}(${qi},${oi})">
-            <span class="cn">${opt[0]}</span><span class="py-mini">${opt[1]}</span>
-          </div>`).join('')}
+        ${q.opts.map((opt,oi)=> optHTML(g, qi, oi, opt)).join('')}
       </div>
+      <div class="q-fb" id="qfb-${g}-${qi}" aria-live="polite"></div>
     </div>`;
 }
+function gradeMCQ(g){
+  const { data, state } = MCQ[g];
+  let correct = 0;
+  data.forEach((q,qi)=>{
+    if(state[qi].first) correct++;
+    if(!state[qi].solved){
+      const node = document.querySelector(`.opt[data-g="${g}"][data-q="${qi}"][data-o="${q.ans}"]`);
+      node.classList.add('correct');
+      setQFb(g, qi, `Đáp án đúng: ${q.opts[q.ans][0]}`, 'no');
+    }
+    document.querySelectorAll(`.opt[data-g="${g}"][data-q="${qi}"]`).forEach(n=>n.classList.add('locked'));
+  });
+  return correct;
+}
+
+
+/* ============================== RENDER PHẦN 1 & 2: TỪ KHÁC NHÓM ============================== */
 function renderOddMeaning(){
   const el = document.getElementById('p1odd');
-  el.innerHTML = oddMeaningData.map((item,i)=> renderQuestionBlock(item, i, 'om', 'selectOddMeaning')).join('');
-}
-function selectOddMeaning(qi, oi){
-  if(oddMeaningLocked) return;
-  oddMeaningAnswers[qi] = oi;
-  document.querySelectorAll(`#p1odd .opt[data-q="${qi}"]`).forEach(o=>o.classList.remove('selected'));
-  document.querySelector(`#om-${qi} .opt[data-o="${oi}"]`).classList.add('selected');
+  el.innerHTML = oddMeaningData.map((item,i)=> renderQuestionBlock({ text:`Câu ${i+1}:`, py:"", opts:item.opts, ans:item.ans }, i, 'om')).join('');
 }
 function renderOddType(){
   const el = document.getElementById('p2odd');
-  el.innerHTML = oddTypeData.map((item,i)=> renderQuestionBlock(item, i, 'ot', 'selectOddType')).join('');
-}
-function selectOddType(qi, oi){
-  if(oddTypeLocked) return;
-  oddTypeAnswers[qi] = oi;
-  document.querySelectorAll(`#p2odd .opt[data-q="${qi}"]`).forEach(o=>o.classList.remove('selected'));
-  document.querySelector(`#ot-${qi} .opt[data-o="${oi}"]`).classList.add('selected');
+  el.innerHTML = oddTypeData.map((item,i)=> renderQuestionBlock({ text:`Câu ${i+1}:`, py:"", opts:item.opts, ans:item.ans }, i, 'ot')).join('');
 }
 
 /* ============================== RENDER PHẦN 3: TÌM LỖI & SỬA ============================== */
@@ -741,10 +800,20 @@ function renderErrors(){
     </div>`).join('');
 }
 function selectError(i, si){
-  if(errorLocked) return;
-  errorAnswers[i] = si;
-  document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>n.classList.remove('selected'));
-  document.querySelector(`#err-${i} .err-seg[data-s="${si}"]`).classList.add('selected');
+  if(submitted) return;
+  const item = errorData[i], st = errorState[i];
+  if(st.solved || st.wrong.includes(si)) return;
+  const node = document.querySelector(`#err-${i} .err-seg[data-s="${si}"]`);
+  st.attempts++;
+  if(si === item.errIdx){
+    st.solved = true; st.first = (st.attempts === 1);
+    node.classList.add('correct');
+    document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>n.classList.add('locked'));
+    document.getElementById(`errfix-${i}`).focus();
+  } else {
+    st.wrong.push(si);
+    node.classList.add('wrong','locked');
+  }
 }
 
 /* ============================== RENDER PHẦN 4: DỊCH CÂU ============================== */
@@ -758,54 +827,29 @@ function renderP4(){
 }
 
 /* ============================== GRADING ============================== */
-function gradeP1(){
-  let correct = 0;
-  oddMeaningData.forEach((item,qi)=>{
-    document.querySelectorAll(`#om-${qi} .opt`).forEach(node=>{
-      const oi = parseInt(node.dataset.o);
-      if(oi === item.answer) node.classList.add('correct');
-      else if(oddMeaningAnswers[qi]===oi) node.classList.add('wrong');
-    });
-    if(oddMeaningAnswers[qi] === item.answer) correct++;
-  });
-  oddMeaningLocked = true;
-  return correct;
-}
-function gradeP2(){
-  let correct = 0;
-  oddTypeData.forEach((item,qi)=>{
-    document.querySelectorAll(`#ot-${qi} .opt`).forEach(node=>{
-      const oi = parseInt(node.dataset.o);
-      if(oi === item.answer) node.classList.add('correct');
-      else if(oddTypeAnswers[qi]===oi) node.classList.add('wrong');
-    });
-    if(oddTypeAnswers[qi] === item.answer) correct++;
-  });
-  oddTypeLocked = true;
-  return correct;
-}
+function gradeP1(){ return gradeMCQ('om'); }
+function gradeP2(){ return gradeMCQ('ot'); }
 function gradeP3(){
   let correct = 0;
   errorData.forEach((item,i)=>{
+    const st = errorState[i];
     const fb = document.getElementById(`errfb-${i}`);
     const fixInput = document.getElementById(`errfix-${i}`);
-    document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>{
-      const si = parseInt(n.dataset.s);
-      if(si === item.errIdx) n.classList.add('correct');
-      else if(errorAnswers[i]===si) n.classList.add('wrong');
-    });
-    const segOk = errorAnswers[i] === item.errIdx;
+    if(!st.solved){
+      const node = document.querySelector(`#err-${i} .err-seg[data-s="${item.errIdx}"]`);
+      node.classList.add('correct');
+    }
+    document.querySelectorAll(`#err-${i} .err-seg`).forEach(n=>n.classList.add('locked'));
     const fixVal = (fixInput.value || '').trim();
     const fixOk = fixVal === item.correct;
     if(fixOk){ fixInput.classList.add('correct'); fixInput.classList.remove('wrong'); }
     else{ fixInput.classList.add('wrong'); fixInput.classList.remove('correct'); }
-    if(segOk && fixOk){
+    if(st.first && fixOk){
       fb.textContent = '✔ Chính xác'; fb.className='err-feedback ok'; correct++;
     } else {
       fb.textContent = `✘ Từ sai: "${item.segs[item.errIdx]}" → sửa thành: "${item.correct}"`; fb.className='err-feedback no';
     }
   });
-  errorLocked = true;
   return correct;
 }
 function gradeP4(){
@@ -842,6 +886,7 @@ function submitAll(){
     alert('Có lỗi xảy ra, vui lòng tải lại trang và nhập họ tên trước khi làm bài.');
     return;
   }
+  submitted = true;
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = 'Đang chấm bài…';
 
@@ -902,6 +947,8 @@ function syncToSheet(data){
 }
 
 /* ============================== INIT ============================== */
+arrangeOptions(oddMeaningData);
+arrangeOptions(oddTypeData);
 renderOddMeaning();
 renderOddType();
 renderErrors();
